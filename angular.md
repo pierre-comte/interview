@@ -135,4 +135,94 @@
 ## Questions sur les fonctionnalités spécifiques
 
 1. **Comment implémentez-vous la communication entre composants Angular ?**
-   - Utiliser des Input et Output decorators pour la communication parent-en
+   - Utiliser des Input et Output decorators pour la communication parent-enfant.
+     ```typescript
+     @Input() data: string;
+     @Output() event = new EventEmitter<string>();
+     ```
+   - Utiliser un service partagé avec un BehaviorSubject ou un EventEmitter pour la communication entre composants non liés.
+
+2. **Qu'est-ce que les "Directives" en Angular et quelles sont les différences entre les "structural directives" et les "attribute directives" ?**
+   - **Directives** : Des classes qui modifient le DOM. Deux types principaux :
+     - **Structural Directives** : Modifient la structure du DOM (ex: `*ngIf`, `*ngFor`).
+     - **Attribute Directives** : Modifient l'apparence ou le comportement d'un élément (ex: `ngClass`, `ngStyle`).
+
+3. **Pouvez-vous expliquer ce qu'est le "Dependency Injection" et comment Angular l'utilise ?**
+   - **Dependency Injection (DI)** : Un design pattern où une classe reçoit ses dépendances d'une source externe plutôt que de les créer elle-même. Angular utilise un injecteur pour fournir les instances des services aux composants et autres services.
+     ```typescript
+     @Injectable()
+     export class DataService {
+       constructor(private http: HttpClient) {}
+     }
+     ```
+
+4. **Comment sécuriser une application Angular, notamment en ce qui concerne l'authentification et l'autorisation ?**
+   - Utiliser des gardes de route (`CanActivate`, `CanActivateChild`) pour protéger les routes.
+     ```typescript
+     canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
+       return this.authService.isLoggedIn();
+     }
+     ```
+   - Implémenter l'authentification basée sur JWT (JSON Web Tokens) pour sécuriser les API.
+   - Utiliser Angular HttpClient avec des interceptors pour gérer les requêtes et réponses HTTP sécurisées.
+     ```typescript
+     @Injectable()
+     export class AuthInterceptor implements HttpInterceptor {
+       intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+         const token = this.authService.getToken();
+         if (token) {
+           const cloned = req.clone({
+             headers: req.headers.set('Authorization', `Bearer ${token}`)
+           });
+           return next.handle(cloned);
+         } else {
+           return next.handle(req);
+         }
+       }
+     }
+     ```
+
+## Questions sur l'architecture et les bonnes pratiques
+
+1. **Comment structurez-vous un grand projet Angular pour maintenir la lisibilité et la maintenabilité du code ?**
+   - Organiser le code en modules fonctionnels ou de fonctionnalités.
+   - Utiliser un style de code cohérent et suivre les conventions de codage Angular.
+   - Séparer les services et les composants pour favoriser la réutilisabilité.
+   - Utiliser des Lazy Loading pour charger les modules à la demande.
+
+2. **Pouvez-vous expliquer l'architecture d'une application Angular basée sur Redux/Ngrx ?**
+   - **Redux/Ngrx** : Une bibliothèque pour gérer l'état global de l'application de manière prévisible et immuable. Utilise des actions, des réducteurs et des effets pour gérer les flux de données.
+     ```typescript
+     interface AppState {
+       counter: number;
+     }
+     const initialState: AppState = {
+       counter: 0,
+     };
+     const counterReducer = createReducer(
+       initialState,
+       on(increment, state => ({ counter: state.counter + 1 })),
+       on(decrement, state => ({ counter: state.counter - 1 })),
+       on(reset, state => ({ counter: 0 })),
+     );
+     ```
+
+3. **Comment gérez-vous les erreurs dans une application Angular ?**
+   - Utiliser des blocs `try-catch` pour gérer les erreurs au niveau du service.
+   - Implémenter des interceptors HTTP pour capturer et gérer les erreurs globalement.
+   - Utiliser `ErrorHandler` pour une gestion centralisée des erreurs.
+     ```typescript
+     @Injectable()
+     export class GlobalErrorHandler implements ErrorHandler {
+       handleError(error: any): void {
+         console.error('An error occurred:', error);
+       }
+     }
+     ```
+
+4. **Quels sont les design patterns courants que vous utilisez dans vos applications Angular ?**
+   - **Singleton** : Pour les services Angular, en s'assurant qu'une seule instance est utilisée.
+   - **Facade** : Pour simplifier les interactions complexes avec les services.
+   - **Observer** : Utilisé avec les Observables pour gérer les flux de données asynchrones.
+   - **Module** : Pour organiser et encapsuler des fonctionnalités spécifiques.
+
